@@ -4,10 +4,12 @@ import useAxiosSecure from '../../../hooks/useAxiosSecure';
 import { FaUserCheck } from 'react-icons/fa';
 import { IoPersonRemoveSharp } from 'react-icons/io5';
 import { FaTrashCan } from 'react-icons/fa6';
+import Swal from 'sweetalert2';
 
 const ApproveRiders = () => {
     const axiosSecure = useAxiosSecure();
-    const { data: riders = [] } = useQuery({
+
+    const { refetch, data: riders = [] } = useQuery({
         queryKey: ['riders', 'pending'],
         queryFn: async () => {
             const res = await axiosSecure.get('/riders');
@@ -15,8 +17,29 @@ const ApproveRiders = () => {
         }
     })
 
-    const handleApproval = id => {
-        
+    const updateRiderStatus = (rider, status) => {
+        const updateInfo = { status: status, email: rider.email }
+        axiosSecure.patch(`/riders/${rider._id}`, updateInfo)
+            .then(res => {
+                if (res.data.modifiedCount) {
+                    refetch();
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: `Rider status is set to ${status}.`,
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            })
+    }
+
+    const handleApproval = rider => {
+        updateRiderStatus(rider, 'approved');
+    }
+
+    const handleRejection = rider => {
+        updateRiderStatus(rider, 'rejected')
     }
 
     return (
@@ -42,13 +65,17 @@ const ApproveRiders = () => {
                                 <td>{rider.name}</td>
                                 <td>{rider.email}</td>
                                 <td>{rider.district}</td>
-                                <td>{rider.status}</td>
+                                <td>
+                                    <p className={`${rider.status === 'approved' ? 'text-green-800' : 'text-red-500'}`}>{rider.status}</p>
+                                </td>
                                 <td>
                                     <button
-                                        onClick={() => handleApproval(rider._id)} className='btn'>
+                                        onClick={() => handleApproval(rider)} className='btn'>
                                         <FaUserCheck />
                                     </button>
-                                    <button className='btn'>
+                                    <button
+                                        onClick={() => handleRejection(rider)}
+                                        className='btn'>
                                         <IoPersonRemoveSharp />
                                     </button>
                                     <button className='btn'>
