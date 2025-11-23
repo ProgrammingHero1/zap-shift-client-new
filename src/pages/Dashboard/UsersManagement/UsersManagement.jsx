@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 const UsersManagement = () => {
     const axiosSecure = useAxiosSecure();
 
-    const { refetch,  data: users = [] } = useQuery({
+    const { refetch, data: users = [] } = useQuery({
         queryKey: ['users'],
         queryFn: async () => {
             const res = await axiosSecure.get(`/users`);
@@ -18,6 +18,7 @@ const UsersManagement = () => {
 
     const handleMakeUser = user => {
         const roleInfo = { role: 'admin' }
+        //TODO: must ask for confirmation before proceed
         axiosSecure.patch(`/users/${user._id}`, roleInfo)
             .then(res => {
                 console.log(res.data);
@@ -34,21 +35,22 @@ const UsersManagement = () => {
             })
     }
 
-    const handleRemoveAdmin = user =>{
-        const roleInfo ={role: 'user'}
+    const handleRemoveAdmin = user => {
+        const roleInfo = { role: 'user' }
+        //TODO: must ask for confirmation before proceed
         axiosSecure.patch(`/users/${user._id}`, roleInfo)
-        .then(res =>{
-            if(res.data.modifiedCount){
-                refetch();
-                Swal.fire({
+            .then(res => {
+                if (res.data.modifiedCount) {
+                    refetch();
+                    Swal.fire({
                         position: "top-end",
                         icon: "success",
                         title: `${user.displayName} removed from Admin`,
                         showConfirmButton: false,
                         timer: 2000
                     });
-            }
-        })
+                }
+            })
     }
 
     return (
@@ -98,9 +100,9 @@ const UsersManagement = () => {
                             </td>
                             <td>
                                 {user.role === 'admin' ?
-                                    <button 
-                                    onClick={ () => handleRemoveAdmin(user)}
-                                    className='btn bg-red-300'>
+                                    <button
+                                        onClick={() => handleRemoveAdmin(user)}
+                                        className='btn bg-red-300'>
                                         <FiShieldOff />
                                     </button> :
                                     <button
