@@ -1,6 +1,7 @@
 import React from 'react';
 import useAuth from '../hooks/useAuth';
 import useRole from '../hooks/useRole';
+import Loading from '../components/Loading/Loading';
 
 const RiderRoute = ({ children }) => {
     const { loading, user } = useAuth();
