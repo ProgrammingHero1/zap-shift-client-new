@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useRef, useState } from 'react';
 import useAxiosSecure from '../../../hooks/useAxiosSecure';
+import Swal from 'sweetalert2';
 
 const AssignRiders = () => {
     const [selectedParcel, setSelectedParcel] = useState(null);
     const axiosSecure = useAxiosSecure();
     const riderModalRef = useRef();
 
-    const { data: parcels = [] } = useQuery({
+    const { data: parcels = [], refetch: parcelsRefetch } = useQuery({
         queryKey: ['parcels', 'pending-pickup'],
         queryFn: async () => {
             const res = await axiosSecure.get('/parcels?deliveryStatus=pending-pickup')
@@ -15,6 +16,7 @@ const AssignRiders = () => {
         }
     })
 
+    // todo: invalidate query after assigning a rider
     const { data: riders = [] } = useQuery({
         queryKey: ['riders', selectedParcel?.senderDistrict, 'available'],
         enabled: !!selectedParcel,
@@ -37,7 +39,20 @@ const AssignRiders = () => {
             riderName: rider.name,
             parcelId: selectedParcel._id
         }
-        axiosSecure.patch(``, riderAssignInfo)
+        axiosSecure.patch(`/parcels/${selectedParcel._id}`, riderAssignInfo)
+            .then(res => {
+                if (res.data.modifiedCount) {
+                    riderModalRef.current.close();
+                    parcelsRefetch();
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: `Rider has been assigned.`,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            })
     }
 
     return (
@@ -66,7 +81,7 @@ const AssignRiders = () => {
                             <td>
                                 <button
                                     onClick={() => openAssignRiderModal(parcel)}
-                                    className='btn btn-primary text-black'>Assign Rider</button>
+                                    className='btn btn-primary text-black'>Find Riders</button>
                             </td>
                         </tr>)}
 
