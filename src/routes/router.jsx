@@ -83,6 +83,12 @@ export const router = createBrowserRouter([
         path: 'payment-cancelled', 
         Component: PaymentCancelled
       }, 
+      // rider only routes
+      {
+        path: 'assigned-deliveries',
+      },
+
+      // admin only routes
       {
         path: 'approve-riders',
         element: <AdminRoute><ApproveRiders></ApproveRiders></AdminRoute>
